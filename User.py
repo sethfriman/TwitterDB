@@ -1,6 +1,6 @@
 class User:
 
-    def __init__(self, followers, following, tweets, user_id):
+    def __init__(self, user_id, followers = [], following = [], tweets = []):
         self.followers = followers
         self.following = following
         self.tweets = tweets
