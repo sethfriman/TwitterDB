@@ -1,16 +1,12 @@
-# This is a sample Python script.
-
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
-
+from dbConnect import DBConnect
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    connection = DBConnect('TwitterDB', 'postgres', 'password')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    connection.cursor.execute("INSERT INTO \"Follows\" (user_id,follows_id) \
+          VALUES (1, 2)")
+    connection.cursor.execute("SELECT * From \"Follows\"")
+    rows = connection.cursor.fetchall()
+    for row in rows:
+        print(row[0], row[1])
