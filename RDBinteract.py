@@ -5,13 +5,18 @@ class RDBInteract(TweetAPI):
 
     def insert_tweet(self, tweet, cursor):
         cursor.execute("INSERT INTO \"Tweet\" (tweet_id,user_id,tweet_ts,tweet_text) \
-                  VALUES (tweet.get_tweet_id(), tweet.get_user_id(), tweet.get_ts(), tweet.get_text())")
+                  VALUES (" + str(tweet.get_tweet_id()) + ", " + str(tweet.get_user_id()) + ", to_timestamp(" +
+                       str(tweet.get_ts()) + "), '" + tweet.get_text() + "')")
 
-    def get_timeLine(self, user_id, cursor):
+    def insert_follow(self, user_id, follow_id, cursor):
+        cursor.execute("INSERT INTO \"Follows\" (user_id,follows_id) \
+                          VALUES (" + str(user_id) + ", " + str(follow_id) + ")")
+
+    def get_timeline(self, user_id, cursor):
         cursor.execute("SELECT follows_id from \"Follows\" f where user_id = " + str(user_id))
         follow_ids = [item[0] for item in cursor.fetchall()]
         follows_ids = str(follow_ids + [user_id]).replace('[', '(').replace(']', ')')
-        cursor.execute("SELECT * from \"Tweet\" where user_id in " + str(follows_ids) + " order by tweet_ts desc")
+        cursor.execute("SELECT * from \"Tweet\" where user_id in " + str(follows_ids) + " order by tweet_ts desc limit 10")
         return cursor.fetchall()
 
     def get_unique_users(self, cursor):

@@ -7,7 +7,7 @@ class TweetAPI(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_timeLine(self, User):
+    def get_timeline(self, User):
         pass
 
     # @abc.abstractmethod

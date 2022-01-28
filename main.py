@@ -1,46 +1,48 @@
-import sys
+import datetime
 import time
 import random
-
 import pandas as pd
-import datetime
+from tqdm import tqdm
 
 from RDBinteract import RDBInteract
+from Tweet import Tweet
 from dbConnect import DBConnect
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     tweets = pd.read_csv('tweet.csv')
     follows = pd.read_csv('follows.csv')
 
     connection = DBConnect('TwitterDB', 'postgres', 'password')
+    interaction = RDBInteract()
 
-    ## Replace with code to add
     fol_start_time = time.time()
     print('-----------------ADDING FOLLOWERS----------------')
-    for index, row in follows.iterrows():
-        if index % 100000 == 0:
-            print(index)
-        connection.cursor.execute("INSERT INTO \"Follows\" (user_id,follows_id) \
-                  VALUES (" + str(row['USER_ID']) + ", " + str(row['FOLLOWS_ID']) + ")")
-    print('FOLLOW ADD TIME: ', (time.time() - fol_start_time) / 60, 'min')
+    for index, row in tqdm(follows.iterrows()):
+        interaction.insert_follow(row['USER_ID'], row['FOLLOWS_ID'], connection.cursor)
+    print('FOLLOW ADD TIME: ' + str(round((time.time() - fol_start_time) / 60, 3)) + ' min')
 
     tweet_start_time = time.time()
     print('-----------------ADDING TWEETS----------------')
-    for index, row in tweets.iterrows():
-        if index % 100000 == 0:
-            print(index)
-        connection.cursor.execute("INSERT INTO \"Tweet\" (tweet_id,user_id, tweet_text, tweet_ts) \
-                  VALUES (" + str(index) + ", " + str(row['USER_ID']) + ", '" + row['TWEET_TEXT'] +
-                                  "', CURRENT_TIMESTAMP" + ")")
-    print('TWEET ADD TIME: ', (time.time() - tweet_start_time) / 60, 'min')
+    for index, row in tqdm(tweets.iterrows()):
+        temp_tweet = Tweet(row['USER_ID'], index, time.time(), row['TWEET_TEXT'])
+        interaction.insert_tweet(temp_tweet, connection.cursor)
+    tweet_end_time = time.time()
+    print('TWEET ADD TIME: ' + str(round((tweet_end_time - tweet_start_time) / 60, 3)) + ' min')
+    print('Tweets per second: ', round(1000000 / (tweet_end_time - tweet_start_time), 3))
 
-    interaction = RDBInteract()
+    all_users = interaction.get_unique_users(connection.cursor)
+    timeline_time = time.time()
+    print('-----------------Retrieving 500 Timelines---------------')
+    for i in tqdm(range(500)):
+        test_user = random.choice(all_users)
+        user_timeline = interaction.get_timeline(test_user, connection.cursor)
+    timeline_end_time = time.time()
+    print('Time for 500 timelines: ' + str(round((timeline_end_time - timeline_time) / 60, 3)) + ' min')
+    print('Timelines per second: ', round(500 / (timeline_end_time - timeline_time), 3))
 
-    test_user = random.choice(interaction.get_unique_users(connection.cursor))
-    print(test_user)
-    user_timeline = interaction.get_timeLine(test_user, connection.cursor)
-
-    print('USER ' + str(test_user) + ' TIMELINE')
+    test_user = random.choice(all_users)
+    user_timeline = interaction.get_timeline(test_user, connection.cursor)
+    print('----------------USER ' + str(test_user) + ' TIMELINE----------------')
     for row in user_timeline:
-        print(row[0], row[1], row[2], row[3])
+        print('Tweet #: ' + str(row[2]) + ' | User: ' + str(row[0]) + ' | Time: ' + str(row[1]))
+        print('\tTweet: ', row[3])
