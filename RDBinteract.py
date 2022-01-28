@@ -13,10 +13,8 @@ class RDBInteract(TweetAPI):
                           VALUES (" + str(user_id) + ", " + str(follow_id) + ")")
 
     def get_timeline(self, user_id, cursor):
-        cursor.execute("SELECT follows_id from \"Follows\" f where user_id = " + str(user_id))
-        follow_ids = [item[0] for item in cursor.fetchall()]
-        follows_ids = str(follow_ids + [user_id]).replace('[', '(').replace(']', ')')
-        cursor.execute("SELECT * from \"Tweet\" where user_id in " + str(follows_ids) + " order by tweet_ts desc limit 10")
+        cursor.execute("SELECT * from \"Tweet\" where user_id in (SELECT follows_id from \"Follows\" f where user_id = "
+                       + str(user_id) + ") order by tweet_ts desc limit 10")
         return cursor.fetchall()
 
     def get_unique_users(self, cursor):
