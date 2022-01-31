@@ -9,10 +9,25 @@ from Tweet import Tweet
 from dbConnect import DBConnect
 
 if __name__ == '__main__':
-    tweets = pd.read_csv('tweet.csv')
-    follows = pd.read_csv('follows.csv')
 
-    connection = DBConnect('TwitterDB', 'postgres', 'password')
+    # Change variable to 'test' to run with test files, or 'full' to run with the full dataset
+    run = 'full'
+    if run == 'full':
+        tweets = pd.read_csv('tweet.csv')
+        follows = pd.read_csv('follows.csv')
+    else:
+        tweets = pd.read_csv('tweets_sample.csv.csv')
+        follows = pd.read_csv('follows_sample.csv')
+
+    # Replace path with own path
+    authentication_path = "/sethfriman/Documents/authentication/twitterDBPostgres.txt"
+    f = open(authentication_path, "r")
+    lines = f.readlines()
+    username = lines[0]
+    password = lines[1]
+    f.close()
+
+    connection = DBConnect('TwitterDB', username, password)
     interaction = RDBInteract()
 
     fol_start_time = time.time()
@@ -42,7 +57,7 @@ if __name__ == '__main__':
 
     test_user = random.choice(all_users)
     user_timeline = interaction.get_timeline(test_user, connection.cursor)
-    print('----------------USER ' + str(test_user) + ' TIMELINE----------------')
+    print('----------------SAMPLE TIMELINE: USER ' + str(test_user) + '------------------')
     for row in user_timeline:
         print('Tweet #: ' + str(row[2]) + ' | User: ' + str(row[0]) + ' | Time: ' + str(row[1]))
         print('\tTweet: ', row[3])
