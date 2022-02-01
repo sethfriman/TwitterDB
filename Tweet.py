@@ -20,4 +20,4 @@ class Tweet:
 
     def __str__(self):
         return 'Tweet #: ' + str(self.tweet_id) + ' | User: ' + str(self.user_id) + ' | Time: ' + str(self.ts) + \
-               '\n\tTweet: ' + self.text
+               '\n\tTweet: ' + str(self.text)

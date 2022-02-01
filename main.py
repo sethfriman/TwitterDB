@@ -71,11 +71,11 @@ if __name__ == '__main__':
     timeline_time = time.time()
     iters = 500
     print('-----------------Retrieving ' + str(iters) + ' Timelines---------------')
-    for i in tqdm(range(500)):
+    for i in tqdm(range(iters)):
         test_user = random.choice(all_users)
         user_timeline = interaction.get_timeline(test_user, connection.cursor)
     timeline_end_time = time.time()
-    print('Time for 500 timelines: ' + str(round((timeline_end_time - timeline_time) / 60, 3)) + ' min')
+    print('Time for ' + str(iters) + ' timelines: ' + str(round((timeline_end_time - timeline_time) / 60, 3)) + ' min')
     print('Timelines per second: ', round(iters / (timeline_end_time - timeline_time), 3))
 
     # Prints a random user's timeline to show string outputs

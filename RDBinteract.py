@@ -14,8 +14,8 @@ class RDBInteract(TweetAPI):
                           VALUES (" + str(user_id) + ", " + str(follow_id) + ")")
 
     def get_timeline(self, user_id, cursor):
-        cursor.execute("SELECT * from \"Tweet\" where user_id in (SELECT follows_id from \"Follows\" f where user_id = "
-                       + str(user_id) + ") order by tweet_ts desc limit 10")
+        cursor.execute("SELECT * from \"Tweet\" t join \"Follows\" f on t.user_id = f.follows_id where f.user_id = "
+                       + str(user_id) + " order by t.tweet_ts desc limit 10")
         user_timeline = cursor.fetchall()
         user_timeline = [Tweet(row[0], row[2], row[1], row[2]) for row in user_timeline]
         return user_timeline
