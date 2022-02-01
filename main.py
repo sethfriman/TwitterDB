@@ -13,7 +13,7 @@ from dbConnect import DBConnect
 if __name__ == '__main__':
 
     # Change variable to 'test' to run with test files, or 'full' to run with the full dataset
-    run = 'full'
+    run = 'test'
     if run == 'full':
         tweets = pd.read_csv('tweet.csv')
         follows = pd.read_csv('follows.csv')
@@ -53,18 +53,19 @@ if __name__ == '__main__':
         interaction.insert_tweet(temp_tweet, connection.cursor)
     tweet_end_time = time.time()
     print('TWEET ADD TIME: ' + str(round((tweet_end_time - tweet_start_time) / 60, 3)) + ' min')
-    print('Tweets per second: ', round(1000000 / (tweet_end_time - tweet_start_time), 3))
+    print('Tweets per second: ', round(len(tweets) / (tweet_end_time - tweet_start_time), 3))
 
     # Randomly selects 500 users and returns their timelines
     all_users = interaction.get_unique_users(connection.cursor)
     timeline_time = time.time()
-    print('-----------------Retrieving 500 Timelines---------------')
+    iters = 500
+    print('-----------------Retrieving ' + str(iters) + ' Timelines---------------')
     for i in tqdm(range(500)):
         test_user = random.choice(all_users)
         user_timeline = interaction.get_timeline(test_user, connection.cursor)
     timeline_end_time = time.time()
     print('Time for 500 timelines: ' + str(round((timeline_end_time - timeline_time) / 60, 3)) + ' min')
-    print('Timelines per second: ', round(500 / (timeline_end_time - timeline_time), 3))
+    print('Timelines per second: ', round(iters / (timeline_end_time - timeline_time), 3))
 
     # Prints a random user's timeline to show string outputs
     test_user = random.choice(all_users)
