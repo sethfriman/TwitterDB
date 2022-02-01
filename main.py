@@ -13,7 +13,7 @@ from dbConnect import DBConnect
 if __name__ == '__main__':
 
     # Change variable to 'test' to run with test files, or 'full' to run with the full dataset
-    run = 'test'
+    run = 'full'
     if run == 'full':
         tweets = pd.read_csv('tweet.csv')
         follows = pd.read_csv('follows.csv')
@@ -38,6 +38,15 @@ if __name__ == '__main__':
         print('Could Not Connect to Database. Program Quitting')
         sys.exit(0)
 
+    # Start the DB fresh
+    connection.cursor.execute("SELECT count(*) FROM \"Tweet\"")
+    print('Tweet table size before: ', connection.cursor.fetchall()[0][0])
+    print('Clearing DB')
+    connection.cursor.execute("Truncate \"Tweet\"")
+    connection.cursor.execute("Truncate \"Follows\"")
+    connection.cursor.execute("SELECT count(*) FROM \"Tweet\"")
+    print('Tweet table size after: ', connection.cursor.fetchall()[0][0])
+
     # Adds the followers to the database
     fol_start_time = time.time()
     print('-----------------ADDING FOLLOWERS----------------')
@@ -55,6 +64,8 @@ if __name__ == '__main__':
     print('TWEET ADD TIME: ' + str(round((tweet_end_time - tweet_start_time) / 60, 3)) + ' min')
     print('Tweets per second: ', round(len(tweets) / (tweet_end_time - tweet_start_time), 3))
 
+    connection.conn.commit()
+
     # Randomly selects 500 users and returns their timelines
     all_users = interaction.get_unique_users(connection.cursor)
     timeline_time = time.time()
@@ -71,6 +82,7 @@ if __name__ == '__main__':
     test_user = random.choice(all_users)
     user_timeline = interaction.get_timeline(test_user, connection.cursor)
     print('----------------SAMPLE TIMELINE: USER ' + str(test_user) + '------------------')
-    for row in user_timeline:
-        print('Tweet #: ' + str(row[2]) + ' | User: ' + str(row[0]) + ' | Time: ' + str(row[1]))
-        print('\tTweet: ', row[3])
+    for tweet in user_timeline:
+        print(str(tweet))
+
+    connection.conn.close()

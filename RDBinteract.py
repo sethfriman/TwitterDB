@@ -1,3 +1,4 @@
+from Tweet import Tweet
 from TweetAPI import TweetAPI
 
 
@@ -15,7 +16,9 @@ class RDBInteract(TweetAPI):
     def get_timeline(self, user_id, cursor):
         cursor.execute("SELECT * from \"Tweet\" where user_id in (SELECT follows_id from \"Follows\" f where user_id = "
                        + str(user_id) + ") order by tweet_ts desc limit 10")
-        return cursor.fetchall()
+        user_timeline = cursor.fetchall()
+        user_timeline = [Tweet(row[0], row[2], row[1], row[2]) for row in user_timeline]
+        return user_timeline
 
     def get_unique_users(self, cursor):
         cursor.execute("SELECT distinct follows_id as user_id from \"Follows\" union "
