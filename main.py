@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import random
@@ -23,13 +24,9 @@ if __name__ == '__main__':
         tweets = pd.read_csv('tweets_sample.csv')
         follows = pd.read_csv('follows_sample.csv')
 
-    # Replace path with own path
-    authentication_path = "/Users/sethfriman/Documents/authentication/twitterDBPostgres.txt"
-    f = open(authentication_path, "r")
-    lines = f.readlines()
-    username = lines[0]
-    password = lines[1]
-    f.close()
+    # Source username and password from environment variables
+    username = os.environ.get('twitterdb_username')
+    password = os.environ.get('twitterdb_password')
 
     # Connect to the Postgres database TwitterDB
     try:
@@ -67,6 +64,7 @@ if __name__ == '__main__':
         temp_tweet = Tweet(row['USER_ID'], index, time.time(), row['TWEET_TEXT'])
         interaction.insert_tweet(temp_tweet, connection.cursor)
     tweet_end_time = time.time()
+    print("\033[A                             \033[A")
     print('TWEET ADD TIME: ' + str(round((tweet_end_time - tweet_start_time) / 60, 3)) + ' min')
     print('Tweets per second: ', round(len(tweets) / (tweet_end_time - tweet_start_time), 3))
 
