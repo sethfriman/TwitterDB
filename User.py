@@ -1,6 +1,7 @@
 class User:
+    """Object representing a user. This class is currently unused"""
 
-    def __init__(self, user_id, followers = [], following = [], tweets = []):
+    def __init__(self, user_id, followers=[], following=[], tweets=[]):
         self.followers = followers
         self.following = following
         self.tweets = tweets

@@ -1,16 +1,18 @@
-import datetime
 import sys
 import time
 import random
 import pandas as pd
 import psycopg2
-from tqdm import tqdm
 
 from RDBinteract import RDBInteract
 from Tweet import Tweet
 from dbConnect import DBConnect
 
 if __name__ == '__main__':
+    """
+        Main program. Connects to DB, loads all Tweets and Follow combinations, and returns timelines.
+        Documents run times for each process.
+    """
 
     # Change variable to 'test' to run with test files, or 'full' to run with the full dataset
     run = 'full'
@@ -50,20 +52,25 @@ if __name__ == '__main__':
     # Adds the followers to the database
     fol_start_time = time.time()
     print('-----------------ADDING FOLLOWERS----------------')
-    for index, row in tqdm(follows.iterrows()):
+    for index, row in follows.iterrows():
         interaction.insert_follow(row['USER_ID'], row['FOLLOWS_ID'], connection.cursor)
     print('FOLLOW ADD TIME: ' + str(round((time.time() - fol_start_time) / 60, 3)) + ' min')
 
     # Adds the tweets to the database
     tweet_start_time = time.time()
     print('-----------------ADDING TWEETS----------------')
-    for index, row in tqdm(tweets.iterrows()):
+    for index, row in tweets.iterrows():
+        if index % 10000 == 0:
+            if index != 0:
+                print("\033[A                             \033[A")
+            print('Current Index: ', index)
         temp_tweet = Tweet(row['USER_ID'], index, time.time(), row['TWEET_TEXT'])
         interaction.insert_tweet(temp_tweet, connection.cursor)
     tweet_end_time = time.time()
     print('TWEET ADD TIME: ' + str(round((tweet_end_time - tweet_start_time) / 60, 3)) + ' min')
     print('Tweets per second: ', round(len(tweets) / (tweet_end_time - tweet_start_time), 3))
 
+    # Once everything is added, program commits insertions to the DB
     connection.conn.commit()
 
     # Randomly selects 500 users and returns their timelines
@@ -71,7 +78,7 @@ if __name__ == '__main__':
     timeline_time = time.time()
     iters = 500
     print('-----------------Retrieving ' + str(iters) + ' Timelines---------------')
-    for i in tqdm(range(iters)):
+    for i in range(iters):
         test_user = random.choice(all_users)
         user_timeline = interaction.get_timeline(test_user, connection.cursor)
     timeline_end_time = time.time()
@@ -85,4 +92,5 @@ if __name__ == '__main__':
     for tweet in user_timeline:
         print(str(tweet))
 
+    # Close the connection to the DB
     connection.conn.close()

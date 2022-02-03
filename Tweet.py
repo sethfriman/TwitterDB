@@ -1,4 +1,5 @@
 class Tweet:
+    """Object that represents a Tweet and holds the relevant metadata"""
 
     def __init__(self, user_id, tweet_id, ts, text):
         self.user_id = user_id
