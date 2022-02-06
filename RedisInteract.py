@@ -1,59 +1,46 @@
-import abc
+import redis
+from TweetAPI import TweetAPI
 
 
-class TweetAPI(abc.ABC):
-    """Interface for conducting interactions with a database"""
+class RedisInteract(TweetAPI):
 
-    @abc.abstractmethod
+    def __init__(self):
+        self.r = redis.Redis(
+            host='localhost',
+            port=6379
+        )
+
     def insert_tweet(self, tweet):
-        """inserts a tweet to the database"""
+        key_value = "tweet_" + str(tweet.tweet_id)
+        self.r.hmset(key_value, {"tweet_id": tweet.tweet_id, "user_id": tweet.user_id,
+                                 "timestamp": tweet.ts, "text": tweet.text})
+        self.r.lpush("tweets", key_value)
         pass
 
-    @abc.abstractmethod
     def insert_follow(self, user_id, follow_id):
         """inserts a follow to the database"""
         pass
 
-    @abc.abstractmethod
     def get_timeline(self, user_id):
         """returns the timeline of the specified user"""
         pass
 
-    @abc.abstractmethod
     def get_unique_users(self):
         """returns the unique users that have a follower or follow someone"""
         pass
 
-    @abc.abstractmethod
     def clear_tables(self):
         """clears the tables in the database"""
-        pass
+        self.r.flushdb()
 
-    @abc.abstractmethod
     def get_table_size(self, tablename):
         """returns the size of the specified table"""
-        pass
+        return self.r.llen(tablename)
 
-    @abc.abstractmethod
     def commit(self):
         """commits all changes to the database"""
         pass
 
-    @abc.abstractmethod
     def close(self):
         """closes the connection to the database"""
-        pass
-
-    # @abc.abstractmethod
-    # def get_followers(self, User):
-    #     pass
-    #
-    # @abc.abstractmethod
-    # def get_followees(self, User):
-    #     pass
-    #
-    # @abc.abstractmethod
-    # def get_Tweets(self, User):
-    #     pass
-    #
-
+        self.r.close()
