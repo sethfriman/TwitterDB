@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import time
@@ -17,9 +18,13 @@ if __name__ == '__main__':
         Documents run times for each process.
     """
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--db', default='redis', help='the database to use')
+    parser.add_argument('-r', '--run', default='full', help='test or full. type of run')
+    args = parser.parse_args()
+
     # Change variable to 'test' to run with test files, or 'full' to run with the full dataset
-    run = 'full'
-    if run == 'full':
+    if args.run == 'full':
         tweets = pd.read_csv('tweet.csv')
         follows = pd.read_csv('follows.csv')
     else:
@@ -31,15 +36,14 @@ if __name__ == '__main__':
     password = os.environ.get('twitterdb_password')
 
     # Connect to the specified database TwitterDB
-    db = 'postgres'
-    if db == 'postgres':
+    if args.db == 'postgres':
         try:
             interaction = RDBInteract('TwitterDB', username, password)
             print('Connected to Database')
         except psycopg2.OperationalError as e:
             print('Could Not Connect to Database. Program Quitting')
             sys.exit(0)
-    elif db == 'redis':
+    elif args.db == 'redis':
         try:
             interaction = RedisInteract()
             print('Connected to Database')
