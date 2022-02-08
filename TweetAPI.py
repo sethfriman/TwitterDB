@@ -35,6 +35,11 @@ class TweetAPI(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def get_next_index(self):
+        """returns the next available ID for a tweet"""
+        pass
+
+    @abc.abstractmethod
     def commit(self):
         """commits all changes to the database"""
         pass

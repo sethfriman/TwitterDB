@@ -1,9 +1,9 @@
 import argparse
+import csv
 import os
 import sys
 import time
 import random
-import pandas as pd
 import psycopg2
 import redis.exceptions
 
@@ -25,11 +25,19 @@ if __name__ == '__main__':
 
     # Change variable to 'test' to run with test files, or 'full' to run with the full dataset
     if args.run == 'full':
-        tweets = pd.read_csv('tweet.csv')
-        follows = pd.read_csv('follows.csv')
+        tweet_file = open('tweet.csv')
+        follow_file = open('follows.csv')
+        tweets = csv.reader(tweet_file)
+        follows = csv.reader(follow_file)
+        next(tweets)  # skip headers
+        next(follows)
     else:
-        tweets = pd.read_csv('tweets_sample.csv')
-        follows = pd.read_csv('follows_sample.csv')
+        tweet_file = open('tweets_sample.csv')
+        follow_file = open('follows_sample.csv')
+        tweets = csv.reader(tweet_file)
+        follows = csv.reader(follow_file)
+        next(tweets)  # skip headers
+        next(follows)
 
     # Source username and password from environment variables
     username = os.environ.get('twitterdb_username')
@@ -64,24 +72,26 @@ if __name__ == '__main__':
     # Adds the followers to the database
     fol_start_time = time.time()
     print('-----------------ADDING FOLLOWERS----------------')
-    for index, row in follows.iterrows():
-        interaction.insert_follow(row['USER_ID'], row['FOLLOWS_ID'])
+    for row in follows:
+        interaction.insert_follow(row[0], row[1])
     print('FOLLOW ADD TIME: ' + str(round((time.time() - fol_start_time) / 60, 3)) + ' min')
 
     # Adds the tweets to the database
     tweet_start_time = time.time()
     print('-----------------ADDING TWEETS----------------')
-    for index, row in tweets.iterrows():
+    index = 0
+    for row in tweets:
         if index % 10000 == 0:
             if index != 0:
                 print("\033[A                             \033[A")
             print('Current Index: ', index)
-        temp_tweet = Tweet(row['USER_ID'], index, time.time(), row['TWEET_TEXT'])
+        temp_tweet = Tweet(row[0], interaction.get_next_index(), time.time(), row[1])
         interaction.insert_tweet(temp_tweet)
+        index += 1
     tweet_end_time = time.time()
     print("\033[A                             \033[A")
     print('TWEET ADD TIME: ' + str(round((tweet_end_time - tweet_start_time) / 60, 3)) + ' min')
-    print('Tweets per second: ', round(len(tweets) / (tweet_end_time - tweet_start_time), 3))
+    print('Tweets per second: ', round(index / (tweet_end_time - tweet_start_time), 3))
 
     # Once everything is added, program commits insertions to the DB
     interaction.commit()

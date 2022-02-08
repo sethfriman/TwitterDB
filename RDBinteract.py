@@ -10,6 +10,7 @@ class RDBInteract(TweetAPI):
     def __init__(self, dbname, dbuser, dbpassword):
         self.conn = psycopg2.connect("dbname=" + dbname + " user=" + dbuser + " password=" + dbpassword)
         self.cursor = self.conn.cursor()
+        self.next_index = -1
 
     def insert_tweet(self, tweet):
         """inserts a tweet to the database"""
@@ -46,6 +47,11 @@ class RDBInteract(TweetAPI):
         """returns the size of the specified table"""
         self.cursor.execute("SELECT count(*) FROM \"" + tablename + "\"")
         return self.cursor.fetchall()[0][0]
+
+    def get_next_index(self):
+        """closes the connection to the database"""
+        self.next_index += 1
+        return self.next_index
 
     def commit(self):
         """commits all changes to the database"""
