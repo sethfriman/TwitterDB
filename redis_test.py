@@ -51,15 +51,20 @@ r.flushall()
 #
 # print(red_interact.get_unique_users())
 
-r.set("next_index", 0)
-print(r.incr("next_index"))
-print(r.incr("next_index"))
-print(type(r.incr("next_index")))
+# r.set("next_index", 0)
+# print(r.incr("next_index"))
+# print(r.incr("next_index"))
+# print(type(r.incr("next_index")))
+#
+# cur_time = time.time()
+# for i in range(10000):
+#     r.set('key_'+str(i), i)
+# end_time = time.time()
+#
+# print('Inserts per second: ', 10000 / (end_time - cur_time))
+# print(type(r.get("key_4")))
 
-cur_time = time.time()
-for i in range(10000):
-    r.set('key_'+str(i), i)
-end_time = time.time()
-
-print('Inserts per second: ', 10000 / (end_time - cur_time))
-print(type(r.get("key_4")))
+r.set("tweet1", "1|2|time|text")
+tweet = r.get("tweet1")
+tweet = tweet.split("|")
+print(tweet)

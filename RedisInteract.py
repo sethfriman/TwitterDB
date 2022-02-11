@@ -22,42 +22,41 @@ class RedisInteract(TweetAPI):
         """Inserts a tweet into the database"""
         tweet.ts = datetime.datetime.utcfromtimestamp(tweet.ts).strftime('%Y-%m-%d %H:%M:%S.%f')
         key_value = "tweet_" + str(tweet.tweet_id)
-        self.r.hmset(key_value, {"tweet_id": tweet.tweet_id, "user_id": tweet.user_id,
-                                 "timestamp": tweet.ts, "text": tweet.text})
+        self.r.set(key_value, str(tweet.tweet_id) + "|" + str(tweet.user_id) +
+                   "|" + str(tweet.ts) + "|" + tweet.text)
         self.r.lpush("user_" + str(tweet.user_id) + "_tweets", key_value)
 
     def insert_follow(self, user_id, follow_id):
         """inserts a follow to the database"""
-        self.r.rpush("user_" + str(user_id), "user_" + str(follow_id))
+        self.r.rpush("user_" + str(user_id) + "_follows", "user_" + str(follow_id))
+        self.r.rpush("user_" + str(follow_id) + "_followedby", "user_" + str(user_id))
         self.r.sadd("users", str(user_id), str(follow_id))
 
     def get_timeline(self, user_id):
         """returns the timeline of the specified user"""
-        following = self.r.lrange("user_" + str(user_id), 0, -1)
-        following = [followee for followee in following]
+        following = self.get_following(user_id)
         following_ids = [followee[followee.index("_") + 1:] for followee in following]
         tweets_list = []
         for followee in following_ids:
-            tweets = self.r.lrange("user_" + str(followee) + "_tweets", 0, 10)
+            tweets = self.r.lrange("user_" + str(followee) + "_tweets", 0, 9)
             for tweet in tweets:
-                temp_tweet = self.r.hgetall(tweet)
-                t_tweet_object = Tweet(temp_tweet['user_id'],
-                                       temp_tweet['tweet_id'],
-                                       temp_tweet['timestamp'],
-                                       temp_tweet['text'])
+                temp_tweet = self.r.get(tweet)
+                temp_tweet = temp_tweet.split("|")
+                t_tweet_object = Tweet(int(temp_tweet[1]),
+                                       int(temp_tweet[0]),
+                                       temp_tweet[2],
+                                       temp_tweet[3])
                 tweets_list.append(t_tweet_object)
-                # tweet_dict[temp_tweet[b'timestamp'].decode("utf-8")] = \
-                #     {'tweet_id': temp_tweet[b'tweet_id'].decode("utf-8"),
-                #      'user_id': temp_tweet[b'user_id'].decode("utf-8"),
-                #      'text': temp_tweet[b'text'].decode("utf-8")}
-        # tweet_dict = {key: tweet_dict[key] for key in sorted(tweet_dict.keys(), reverse=True)}
-        # tweet_dict = take(10, tweet_dict.items())
-        # for pair in tweet_dict:
-        #     t_tweet_object = Tweet(pair[1]['user_id'], pair[1]['tweet_id'],
-        #                            pair[0], pair[1]['text'])
-        #     tweets_list.append(t_tweet_object)
         tweets_list = sorted(tweets_list)
         return tweets_list[:10]
+
+    def get_followers(self, user_id):
+        """Returns the users that follow this user"""
+        return self.r.lrange("user_" + str(user_id) + "_followedby", 0, -1)
+
+    def get_following(self, user_id):
+        """Returns the users that this user follows"""
+        return self.r.lrange("user_" + str(user_id) + "_follows", 0, -1)
 
     def get_unique_users(self):
         """returns the unique users that have a follower or follow someone"""
@@ -83,3 +82,28 @@ class RedisInteract(TweetAPI):
     def close(self):
         """closes the connection to the database"""
         self.r.close()
+
+    def make_tweet(self, tweet_id):
+        temp_tweet = self.r.get(tweet_id)
+        temp_tweet = temp_tweet.split("|")
+        t_tweet_object = Tweet(int(temp_tweet[1]),
+                               int(temp_tweet[0]),
+                               temp_tweet[2],
+                               temp_tweet[3])
+        return t_tweet_object
+
+    def insert_tweet_strat2(self, tweet):
+        """Inserts a tweet into the database using a timeline-first strategy"""
+        tweet.ts = datetime.datetime.utcfromtimestamp(tweet.ts).strftime('%Y-%m-%d %H:%M:%S.%f')
+        key_value = "tweet_" + str(tweet.tweet_id)
+        self.r.set(key_value, str(tweet.tweet_id) + "|" + str(tweet.user_id) +
+                   "|" + str(tweet.ts) + "|" + tweet.text)
+        followers = self.get_followers(tweet.user_id)
+        for follower in followers:
+            self.r.lpush(follower + "_timeline", key_value)
+
+    def get_timeline_strat2(self, user_id):
+        """returns the timeline of the specified user using the timeline-first strategy"""
+        timeline_keys = self.r.lrange("user_" + str(user_id) + "_timeline", 0, 9)
+        timeline_tweets = [self.make_tweet(tweet_id) for tweet_id in timeline_keys]
+        return timeline_tweets
