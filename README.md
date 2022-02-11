@@ -5,21 +5,24 @@ Then pulls timelines from a database based on who the selected user follows and 
 
 ## Data Files
 tweet.csv: file containing 1,000,000 tweets. Column headers are 'USER_ID' and 'TWEET_TEXT'
+
 follows.csv: file containing roughly 30,000 rows of users that follow other users. Column headers are 'USER_ID' and 'FOLLOWS_ID' where the user specified in USER_ID follows the user specified in FOLLOWS_ID
 
 ## How to run:
 To run the program, navigate to the project directory
 
-The run command is 'python main.py' and takes two optional arguments
+The run command is 'python main.py' and takes two optional arguments:
+  
   '-d' or '--db': the database to use. Currently supports Redis ('redis') and Postgres ('postgres') (default is 'redis')
       Note: To use Redis db, Redis must be installed on the machine running the program. 
             To run Postgres db, Postgres must be installed and a database must already exist to hold the values in the follows.csv and tweet.csv files
             In both instances, the server for the database must already be running.
+  
   '-r' or '--run': the type of run to do (either 'full' or 'test', default is 'full')
       Note: 'test' pulls the data from smaller test files to check for program completeness and observe bugs
             'full' pulls from a follows.csv file of roughly 30,000 follows combinations and tweet.csv file that holds 1,000,000 tweets
 
-running just 'python main.py' will execute a complete run of the program. Current default arguments are 'full' (csv files) and 'redis' (database)
+Running just 'python main.py' will execute a complete run of the program. Current default arguments are 'full' (csv files) and 'redis' (database)
 
 ## What the Program Does
 The program first attempts to connect to the specified database. If successful, it returns a success message and continues. An unsuccessful connection exits the program.
