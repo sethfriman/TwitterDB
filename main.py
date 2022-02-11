@@ -117,7 +117,7 @@ if __name__ == '__main__':
     # Randomly selects 500 users and returns their timelines
     all_users = interaction.get_unique_users()
     timeline_time = time.time()
-    iters = 500
+    iters = 2000
     print('-----------------Retrieving ' + str(iters) + ' Timelines---------------')
     for i in range(iters):
         test_user = random.choice(all_users)

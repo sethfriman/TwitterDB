@@ -34,7 +34,7 @@ Returns the current index every 10,000 iterations (for progress) and then ultima
 
 The program then generates a list of unique users that either follow someone or have a follower. It selects a random user from this list and returns their timeline.
 A timeline is the 10 most recent tweets from any user that the specified user follows.
-This process is repeated 500 times.
+This process is repeated 2,000 times.
 Returns the total amount of time and the number of timelines the program/database were able to return per second.
 
 Finally, The program prints a sample timeline from another random user to show sample output of a timeline, and closes the connection with the database, finishing the run.

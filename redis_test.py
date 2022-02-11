@@ -1,3 +1,4 @@
+import random
 import time
 
 import redis
@@ -8,13 +9,13 @@ from Tweet import Tweet
 
 warnings.filterwarnings('ignore')
 
-r = redis.Redis(
-    host='localhost',
-    port=6379,
-    decode_responses=True
-)
-
-r.flushall()
+# r = redis.Redis(
+#     host='localhost',
+#     port=6379,
+#     decode_responses=True
+# )
+#
+# r.flushall()
 
 # r.hmset("tweet:1", {"tweet_id": 1, "user_id": 2, "date": time.time(), "text": "testtext"})
 # r.lpush("tweets", "tweet:1")
@@ -64,7 +65,21 @@ r.flushall()
 # print('Inserts per second: ', 10000 / (end_time - cur_time))
 # print(type(r.get("key_4")))
 
-r.set("tweet1", "1|2|time|text")
-tweet = r.get("tweet1")
-tweet = tweet.split("|")
-print(tweet)
+interaction = RedisInteract()
+strat = "2"
+
+all_users = interaction.get_unique_users()
+timeline_time = time.time()
+iters = 10000
+print('-----------------Retrieving ' + str(iters) + ' Timelines---------------')
+for i in range(iters):
+    test_user = random.choice(all_users)
+    if strat == "1":
+        user_timeline = interaction.get_timeline(test_user)
+    elif strat == "2":
+        user_timeline = interaction.get_timeline_strat2(test_user)
+    else:
+        user_timeline = interaction.get_timeline(test_user)
+timeline_end_time = time.time()
+print('Time for ' + str(iters) + ' timelines: ' + str(round((timeline_end_time - timeline_time) / 60, 3)) + ' min')
+print('Timelines per second: ', round(iters / (timeline_end_time - timeline_time), 3))
