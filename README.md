@@ -11,7 +11,7 @@ follows.csv: file containing roughly 30,000 rows of users that follow other user
 ## How to run:
 To run the program, navigate to the project directory
 
-The run command is 'python main.py' and takes two optional arguments:
+The run command is 'python main.py' and takes three optional arguments:
   
   '-d' or '--db': the database to use. Currently supports Redis ('redis') and Postgres ('postgres') (default is 'redis')
       Note: To use Redis db, Redis must be installed on the machine running the program. 
@@ -21,6 +21,11 @@ The run command is 'python main.py' and takes two optional arguments:
   '-r' or '--run': the type of run to do (either 'full' or 'test', default is 'full')
       Note: 'test' pulls the data from smaller test files to check for program completeness and observe bugs
             'full' pulls from a follows.csv file of roughly 30,000 follows combinations and tweet.csv file that holds 1,000,000 tweets
+
+  '-s' or '--strat': the strategy to execute (1 or 2) (default is 1)
+      Note: The redis functionality has 2 strategies, one that builds timelines at the point of the get_timeline call (1)
+            or one that builds timelines at the point of inserting a tweet. The strategies can be switched between by changing
+            this argument. If Redis is not the selected database then this parameter does not matter
 
 Running just 'python main.py' will execute a complete run of the program. Current default arguments are 'full' (csv files) and 'redis' (database)
 
