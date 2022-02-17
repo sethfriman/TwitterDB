@@ -1,19 +1,9 @@
-
+import argparse
 import csv
 import os
-import sys
-import time
-import random
-#import psycopg2
-import redis.exceptions
 
-from RDBinteract import RDBInteract
-from RedisInteract import RedisInteract
-from Tweet import Tweet
-from dbConnect import DBConnect
 from Run import Run
 from Interaction import Interaction
-
 
 
 def setTweets(type_of_run):
@@ -35,63 +25,46 @@ def setFollows(type_of_run):
     next(follows)
     return follows
 
-#def connectPG():
-    # try:
-         #   interaction = RDBInteract('TwitterDB', username, password)
-         #   print('Connected to Database')
-      #  except psycopg2.OperationalError as e:
-       #     print('Could Not Connect to Database. Program Quitting')
-       #     sys.exit(0)
-    #return interaction
-
-
 
 if __name__ == '__main__':
     """
         Main program. Connects to DB, loads all Tweets and Follow combinations, and returns timelines.
         Documents run times for each process.
     """
-    run = Run('redis', 'test', '1')
-    Run.printRunInfo(run)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--db', default='redis', help='the database to use')
+    parser.add_argument('-r', '--run', default='test', help='test or full. type of run')
+    parser.add_argument('-s', '--strat', default='1', help='1 or 2, the strategy to employ for tweet insertions')
+    args = parser.parse_args()
+
+    run = Run(args.db, args.run, args.strat)
+    run.printRunInfo()
     tweets = setTweets(run.type_of_run)
     follows = setFollows(run.type_of_run)
 
-    interact = Interaction(run.db)
-   
-    interact.resetDB()
-    interaction = interact.connect()
-    interact.addFollowers(follows)
-    interact.addTweets(tweets, run)
-    
     # Source username and password from environment variables
     username = os.environ.get('twitterdb_username')
     password = os.environ.get('twitterdb_password')
+
+    interact = Interaction(run.db, username, password)
+   
+    interact.resetDB()
+    interact.addFollowers(follows)
+    interact.addTweets(tweets, run)
  
     # Once everything is added, program commits insertions to the DB
-    interaction.commit()
+    interact.commit()
 
     # Randomly selects 500 users and returns their timelines
-    all_users = interaction.get_unique_users()
-    timeline_time = time.time()
+    all_users = interact.get_unique_users()
     iters = 2000
-    print('-----------------Retrieving ' + str(iters) + ' Timelines---------------')
-    for i in range(iters):
-        test_user = random.choice(all_users)
-        if run.strat == "1":
-            user_timeline = interaction.get_timeline(test_user)
-        elif run.strat == "2":
-            user_timeline = interaction.get_timeline_strat2(test_user)
-        else:
-            user_timeline = interaction.get_timeline(test_user)
-    timeline_end_time = time.time()
-    print('Time for ' + str(iters) + ' timelines: ' + str(round((timeline_end_time - timeline_time) / 60, 3)) + ' min')
-    print('Timelines per second: ', round(iters / (timeline_end_time - timeline_time), 3))
+    final_user, user_timeline = interact.getTimelines(iters, all_users, run)
 
     # Prints the last selected user's timeline to show string outputs
-    print('----------------SAMPLE TIMELINE: USER ' + str(test_user) + '------------------')
+    print('----------------SAMPLE TIMELINE: USER ' + str(final_user) + '------------------')
     for tweet in user_timeline:
         print(str(tweet))
 
     # Close the connection to the DB
-    interaction.close()
+    interact.close()
 

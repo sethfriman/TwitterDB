@@ -1,8 +1,5 @@
 import datetime
-
-import pandas as pd
 import redis
-from more_itertools import take
 
 from Tweet import Tweet
 from TweetAPI import TweetAPI

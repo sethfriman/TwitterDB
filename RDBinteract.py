@@ -1,4 +1,4 @@
-#import psycopg2
+import psycopg2
 
 from Tweet import Tweet
 from TweetAPI import TweetAPI
@@ -58,5 +58,5 @@ class RDBInteract(TweetAPI):
         self.conn.commit()
 
     def close(self):
-        """closes the conneciton to the database"""
+        """closes the connection to the database"""
         self.conn.close()
