@@ -1,4 +1,4 @@
-import psycopg2
+#import psycopg2
 
 from Tweet import Tweet
 from TweetAPI import TweetAPI
