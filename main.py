@@ -5,8 +5,8 @@ import os
 from Run import Run
 from Interaction import Interaction
 
-
 def setTweets(type_of_run):
+    """sets the tweets for the run based on run type (full or test) and extracts tweets from appropriate csv"""
     if type_of_run == 'full':
         tweet_file = open('tweet.csv')
     else:
@@ -17,6 +17,7 @@ def setTweets(type_of_run):
 
 
 def setFollows(type_of_run):
+    """sets the followers for the run based on run type (full or test) and extracts followers from appropriate csv"""
     if type_of_run == 'full':
         follow_file = open('follows.csv')
     else:
@@ -37,6 +38,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--strat', default='1', help='1 or 2, the strategy to employ for tweet insertions')
     args = parser.parse_args()
 
+    #sets basic run information for database interaction based on database type, run type, and strategy  
     run = Run(args.db, args.run, args.strat)
     run.printRunInfo()
     tweets = setTweets(run.type_of_run)
@@ -46,10 +48,14 @@ if __name__ == '__main__':
     username = os.environ.get('twitterdb_username')
     password = os.environ.get('twitterdb_password')
 
+    #creates an interaction object that allows interaction with chosen database
     interact = Interaction(run.db, username, password)
    
+    #resets the database from previous runs 
     interact.resetDB()
+    #adds followers to the database
     interact.addFollowers(follows)
+    #adds tweets to the database
     interact.addTweets(tweets, run)
  
     # Once everything is added, program commits insertions to the DB

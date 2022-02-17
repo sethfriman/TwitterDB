@@ -18,7 +18,7 @@ class Interaction:
         self.specific_interact = self.connect(username, password)
         
     def connect(self, username, password):
-        # Connect to the specified database TwitterDB
+        """Connect to specified database TwitterDB"""
         if self.db == 'postgres':
             try:
                 interaction = RDBInteract('TwitterDB', username, password)
@@ -40,14 +40,14 @@ class Interaction:
         return interaction
 
     def resetDB(self):
-        # Start the DB fresh
+        """Start the DB fresh"""
         print('Num user found before: ', len(self.specific_interact.get_unique_users()))
         print('Clearing DB')
         self.specific_interact.clear_tables()
         print('Num user found after: ', len(self.specific_interact.get_unique_users()))
 
     def addFollowers(self, follows):
-        # Adds the followers to the database
+        """Adds the followers to the database"""
         fol_start_time = time.time()
         print('-----------------ADDING FOLLOWERS----------------')
         for row in follows:
@@ -55,7 +55,7 @@ class Interaction:
         print('FOLLOW ADD TIME: ' + str(round((time.time() - fol_start_time) / 60, 3)) + ' min')
 
     def addTweets(self, tweets, run):
-        # Adds the tweets to the database
+        """Adds the tweets to the database"""
         tweet_start_time = time.time()
         print('-----------------ADDING TWEETS----------------')
         index = 0
@@ -78,6 +78,7 @@ class Interaction:
         print('Tweets per second: ', round(index / (tweet_end_time - tweet_start_time), 3))
 
     def getTimelines(self, iters, all_users, run):
+        """retrieves timelinens from database"""
         timeline_time = time.time()
         print('-----------------Retrieving ' + str(iters) + ' Timelines---------------')
         for i in range(iters):
@@ -95,10 +96,13 @@ class Interaction:
         return test_user, user_timeline
 
     def commit(self):
+        """ommits the interaction to database"""
         self.specific_interact.commit()
 
     def get_unique_users(self):
+        """gets unique users from specific_interact"""
         return self.specific_interact.get_unique_users()
 
     def close(self):
+        """closes the specific_interact interaction with database"""
         self.specific_interact.close()
